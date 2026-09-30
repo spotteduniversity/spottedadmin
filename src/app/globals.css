@@ -1,0 +1,173 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Spotted admin theme.
+  Regra de cor: o verde #1bff11 aparece apenas como fundo ou indicador.
+  Nunca como texto, borda fina ou focus ring sobre branco.
+  Foco e aneis sempre usam o ink (quase-preito).
+*/
+:root {
+  --radius: 0.625rem;
+
+  /* Superficies */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.16 0.005 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.005 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.005 260);
+
+  /* Neutros */
+  --muted: oklch(0.972 0.002 260);
+  --muted-foreground: oklch(0.508 0.011 260);
+  --secondary: oklch(0.972 0.002 260);
+  --secondary-foreground: oklch(0.16 0.005 260);
+
+  /* Acao principal: ink, nao verde */
+  --primary: oklch(0.16 0.005 260);
+  --primary-foreground: oklch(0.985 0 0);
+
+  /* Verde da marca: fundo/indicador apenas */
+  --accent: oklch(0.935 0.235 131);
+  --accent-foreground: oklch(0.16 0.005 260);
+
+  --destructive: oklch(0.577 0.216 27.3);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.92 0.003 260);
+  --input: oklch(0.92 0.003 260);
+  --ring: oklch(0.16 0.005 260);
+
+  --chart-1: oklch(0.65 0.23 131);
+  --chart-2: oklch(0.6 0.02 260);
+  --chart-3: oklch(0.7 0.12 190);
+  --chart-4: oklch(0.65 0.16 60);
+  --chart-5: oklch(0.58 0.2 20);
+
+  /* Sidebar: claro, item ativo em verde */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.16 0.005 260);
+  --sidebar-primary: oklch(0.935 0.235 131);
+  --sidebar-primary-foreground: oklch(0.16 0.005 260);
+  --sidebar-accent: oklch(0.955 0.004 260);
+  --sidebar-accent-foreground: oklch(0.16 0.005 260);
+  --sidebar-border: oklch(0.92 0.003 260);
+  --sidebar-ring: oklch(0.16 0.005 260);
+  --sidebar-menu-active-color: oklch(0.16 0.005 260);
+  --sidebar-menu-sub-active-color: oklch(0.16 0.005 260);
+  --sidebar-menu-badge: oklch(0.16 0.005 260);
+
+  --sidebar-width: 15rem;
+  --sidebar-width-icon: 3.5rem;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-menu-active-color: var(--sidebar-menu-active-color);
+  --color-sidebar-menu-sub-active-color: var(--sidebar-menu-sub-active-color);
+  --color-sidebar-menu-badge: var(--sidebar-menu-badge);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Focus consistente em ink, nunca em verde */
+  :focus-visible {
+    @apply outline-ring outline-2 outline-offset-2;
+  }
+
+  /* Números tabulares alinham tabelas e métricas */
+  table,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@layer utilities {
+  /* Marca: fundo verde com texto ink */
+  .bg-brand {
+    background-color: var(--accent);
+  }
+
+  .text-brand-ink {
+    color: var(--accent-foreground);
+  }
+
+  /* Ponto de status em verde */
+  .status-dot {
+    @apply inline-block size-2 shrink-0 rounded-full;
+    background-color: var(--accent);
+  }
+
+  .status-dot-muted {
+    @apply inline-block size-2 shrink-0 rounded-full;
+    background-color: var(--muted-foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
