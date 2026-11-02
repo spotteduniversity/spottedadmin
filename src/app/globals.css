@@ -125,6 +125,14 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     text-rendering: optimizeLegibility;
+    touch-action: manipulation;
+  }
+
+  /* Remove o highlight azul padrão do Android/iOS */
+  button,
+  a,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Focus consistente em ink, nunca em verde */
@@ -158,6 +166,20 @@
   .status-dot-muted {
     @apply inline-block size-2 shrink-0 rounded-full;
     background-color: var(--muted-foreground);
+  }
+
+  /*
+    Expande o alvo de toque sem alterar o tamanho visual.
+    Vertical-first de propósito: entre botões vizinhos já existe gap
+    lateral, então expandir só na horizontal faria os alvos se
+    sobreporem e o clique iria para o botão errado.
+    Exige que o elemento host esteja posicionado (relative/absolute).
+  */
+  .touch-target::before {
+    content: "";
+    position: absolute;
+    inset: -6px -2px;
+    border-radius: inherit;
   }
 }
 

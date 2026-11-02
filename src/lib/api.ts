@@ -24,6 +24,7 @@ import type {
   PendingPost,
   PendingResponse,
   PreviewResponse,
+  LongLivedTokenResponse,
 } from "./types";
 
 /* -------------------------------------------------------------------------- */
@@ -92,10 +93,26 @@ export async function uploadAccountAsset(
   file: File,
 ): Promise<Account> {
   const form = new FormData();
-  form.append("file", file);
+  // `kind` primeiro: alguns proxies/multer precisam do campo antes do arquivo.
   form.append("kind", kind);
+  form.append("file", file);
 
   const res = await api.post<AccountResponse>(`/accounts/${id}/assets`, form);
+  return res.account;
+}
+
+/**
+ * Upload de logo da conta (.png/.jpg). Sobe pro bucket público spotted-assets
+ * e salva a URL na coluna spotted_logo do banco.
+ */
+export async function uploadAccountLogo(
+  id: string,
+  file: File,
+): Promise<Account> {
+  const form = new FormData();
+  form.append("file", file);
+
+  const res = await api.post<AccountResponse>(`/accounts/${id}/logo`, form);
   return res.account;
 }
 
@@ -175,3 +192,17 @@ export async function updateAdmin(
 export function deleteAdmin(id: string) {
   return api.delete<{ success: boolean; message: string }>(`/users/${id}`);
 }
+
+/* -------------------------------------------------------------------------- */
+/* Long-Lived Token                                                           */
+/* -------------------------------------------------------------------------- */
+
+export async function generateLongLivedToken(
+  accessToken: string,
+): Promise<LongLivedTokenResponse> {
+  const res = await api.post<LongLivedTokenResponse>("/long-lived-token", {
+    access_token: accessToken,
+  });
+  return res;
+}
+

@@ -317,7 +317,7 @@ export default function UsersPage() {
                         disabled={isSelf || removeMutation.isPending}
                         title={isSelf ? "Você não pode remover o próprio usuário." : undefined}
                         onClick={() => setDeleteTarget(admin)}
-                        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        className="relative touch-target text-destructive hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -336,7 +336,7 @@ export default function UsersPage() {
           if (!open && !saveMutation.isPending) setFormOpen(false);
         }}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>
               {editing ? "Editar administrador" : "Novo administrador"}

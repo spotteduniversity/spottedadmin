@@ -117,7 +117,7 @@ function CredentialsForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-lg:max-w-lg">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto max-lg:sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Credenciais de publicação</DialogTitle>
           <DialogDescription>

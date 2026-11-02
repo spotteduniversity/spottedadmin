@@ -375,7 +375,7 @@ export default function PendingPage() {
                           <img
                             src={post.image_url}
                             alt="Imagem enviada junto ao post"
-                            className="max-h-40 rounded-md border object-cover"
+                            className="max-h-40 max-w-full rounded-md border object-cover"
                             loading="lazy"
                           />
                         ) : null}
@@ -387,6 +387,7 @@ export default function PendingPage() {
                           size="sm"
                           onClick={() => openPreview(post)}
                           disabled={busyId !== null}
+                          className="relative touch-target"
                         >
                           <Sparkles className="size-4" />
                           Ver card
@@ -396,7 +397,7 @@ export default function PendingPage() {
                           size="sm"
                           onClick={() => reject.mutate(post.id)}
                           disabled={busyId !== null}
-                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          className="relative touch-target text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           {busyId === "reject" ? (
                             <Spinner className="size-4" />
@@ -405,7 +406,12 @@ export default function PendingPage() {
                           )}
                           Rejeitar
                         </Button>
-                        <Button size="sm" onClick={() => approve.mutate(post.id)} disabled={busyId !== null}>
+                        <Button
+                          size="sm"
+                          onClick={() => approve.mutate(post.id)}
+                          disabled={busyId !== null}
+                          className="relative touch-target"
+                        >
                           {busyId === "approve" ? (
                             <Spinner className="size-4" />
                           ) : (

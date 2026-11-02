@@ -96,6 +96,10 @@ export interface Account {
   text_card_template_path: string | null;
   text_color: string;
   shadow_color: string;
+  /** URL pública do logo da cidade (bucket spotted-assets). */
+  spotted_logo: string | null;
+  /** `false` = publica no Instagram assim que o spotted é enviado. */
+  is_moderated: boolean;
   token_expires_at: string | null;
   token_refreshed_at: string | null;
   created_at: string;
@@ -129,11 +133,13 @@ export interface AccountPatch {
   slug?: string;
   text_color?: string;
   shadow_color?: string;
+  is_moderated?: boolean;
 }
 
 export interface AccountCreateInput {
   display_name: string;
   username?: string;
+  is_moderated?: boolean;
 }
 
 export type AssetKind = "base" | "template";
@@ -212,6 +218,31 @@ export interface AdminUpdateInput {
   password?: string;
   is_super?: boolean;
   accountIds?: string[];
+}
+
+/* -------------------------------------------------------------------------- */
+/* Long-Lived Token                                                           */
+/* -------------------------------------------------------------------------- */
+
+export interface MetaPageItem {
+  id: string;
+  name: string;
+  access_token: string;
+  instagram_business_account?: {
+    id: string;
+    username: string;
+  };
+}
+
+export interface LongLivedTokenResponse extends ApiEnvelope {
+  access_token: string;
+  token_type?: string;
+  expires_in?: number;
+  pages?: MetaPageItem[];
+}
+
+export interface LongLivedTokenInput {
+  access_token: string;
 }
 
 /* -------------------------------------------------------------------------- */

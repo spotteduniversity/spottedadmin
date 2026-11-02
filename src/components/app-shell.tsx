@@ -9,7 +9,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutList, LogOut, ShieldCheck } from "lucide-react";
+import { Building2, KeyRound, LayoutList, LogOut, ShieldCheck } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +39,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/pending", label: "Fila de aprovação", icon: LayoutList },
   { href: "/accounts", label: "Contas e cidades", icon: Building2 },
+  { href: "/long-lived-token", label: "Criar Long Lived", icon: KeyRound },
   { href: "/users", label: "Administradores", icon: ShieldCheck, superOnly: true },
 ];
 
@@ -130,7 +131,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </Sidebar>
 
       <SidebarInset className="min-w-0">
-        <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur-sm md:hidden">
+        <header className="sticky top-0 z-30 flex min-h-14 shrink-0 items-center gap-2 border-b bg-background/85 px-4 pt-[env(safe-area-inset-top)] h-[calc(3.5rem+env(safe-area-inset-top))] backdrop-blur-sm md:hidden">
           <SidebarTrigger className="-ml-1" />
           <span className="text-sm font-semibold">Spotted</span>
         </header>
@@ -170,7 +171,7 @@ export function PageHeader({
 /** Container padrão das telas. */
 export function PageBody({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 sm:px-6 sm:py-8 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       {children}
     </div>
   );
