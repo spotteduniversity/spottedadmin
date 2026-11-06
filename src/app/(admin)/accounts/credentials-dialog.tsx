@@ -92,7 +92,9 @@ function CredentialsForm({
   onSave: (credentials: AccountCredentials) => void;
 }) {
   const [accessToken, setAccessToken] = useState("");
-  const [igUserId, setIgUserId] = useState("");
+  const [igUserId, setIgUserId] = useState(
+    IG_USER_ID_RE.test(account.ig_user_id) ? account.ig_user_id : "",
+  );
   const [showToken, setShowToken] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
