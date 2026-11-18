@@ -113,6 +113,7 @@ export default function AccountsPage() {
           // `undefined` deixa o valor atual intacto no backend.
           username: values.username,
           slug: values.slug,
+          base_caption: values.base_caption,
           text_color: values.text_color,
           shadow_color: values.shadow_color,
           // Antes da migração a coluna não existe na resposta; não a envia.
@@ -124,6 +125,7 @@ export default function AccountsPage() {
         target = await createAccount({
           display_name: values.display_name,
           username: values.username,
+          base_caption: values.base_caption,
           // Só envia quando falso; o default do banco já é `true`.
           ...(values.is_moderated === false ? { is_moderated: false } : {}),
         });

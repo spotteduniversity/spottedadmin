@@ -35,6 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ASSET_MIME_TYPES,
   DEFAULT_TEXT_COLOR,
@@ -65,6 +66,11 @@ const schema = z.object({
     .trim()
     .regex(SLUG, "Use apenas letras minúsculas, números e hífen.")
     .optional(),
+  base_caption: z
+    .string()
+    .trim()
+    .min(1, "Informe a legenda base.")
+    .max(2200, "Use no máximo 2200 caracteres."),
   is_moderated: z.boolean(),
   text_color: z.string().regex(HEX, "Informe um hex de 6 dígitos."),
   shadow_r: z.number().int().min(0).max(255),
@@ -80,6 +86,7 @@ export interface AccountFormValues {
   display_name: string;
   username?: string;
   slug?: string;
+  base_caption: string;
   is_moderated: boolean;
   text_color: string;
   shadow_color: string;
@@ -188,6 +195,7 @@ export function AccountFormDialog({
       display_name: "",
       username: "",
       slug: "",
+      base_caption: "",
       is_moderated: true,
       text_color: DEFAULT_TEXT_COLOR,
       shadow_r: shadow.r,
@@ -212,6 +220,7 @@ export function AccountFormDialog({
       display_name: account?.display_name ?? "",
       username: account?.username ?? "",
       slug: account?.slug ?? "",
+      base_caption: account?.base_caption ?? "",
       is_moderated: account?.is_moderated ?? true,
       text_color: account?.text_color ?? DEFAULT_TEXT_COLOR,
       shadow_r: next.r,
@@ -280,6 +289,7 @@ export function AccountFormDialog({
       display_name: values.display_name.trim(),
       username: values.username || undefined,
       slug: values.slug?.trim(),
+      base_caption: values.base_caption.trim(),
       is_moderated: values.is_moderated,
       text_color: values.text_color,
       shadow_color: toShadow(values),
@@ -442,7 +452,7 @@ export function AccountFormDialog({
             <FormSection
               icon={<Send className="size-4" />}
               title="Publicação"
-              description="Defina se os spotteds passam por revisão antes de ir ao Instagram."
+              description="Defina a legenda base e se os spotteds passam por revisão antes de ir ao Instagram."
             >
               <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
@@ -472,6 +482,28 @@ export function AccountFormDialog({
                   disabled={isSubmitting}
                   className="shrink-0"
                 />
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <Label htmlFor="base_caption">Legenda base</Label>
+                <Textarea
+                  id="base_caption"
+                  rows={4}
+                  maxLength={2200}
+                  placeholder={"Ex.: #spotted #lavras\n\n@spottedlavras"}
+                  aria-invalid={Boolean(errors.base_caption)}
+                  {...register("base_caption")}
+                />
+                {errors.base_caption ? (
+                  <p role="alert" className="text-xs text-destructive">
+                    {errors.base_caption.message}
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Vai no fim da legenda de todos os posts, após uma linha em
+                    branco. Obrigatória para publicar.
+                  </p>
+                )}
               </div>
             </FormSection>
 

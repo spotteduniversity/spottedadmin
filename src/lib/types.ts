@@ -60,6 +60,7 @@ export interface AccountSummary {
   text_card_template_path: string | null;
   text_color: string;
   shadow_color: string;
+  base_caption: string | null;
   token_expires_at: string | null;
   token_refreshed_at: string | null;
   created_at: string;
@@ -96,6 +97,8 @@ export interface Account {
   text_card_template_path: string | null;
   text_color: string;
   shadow_color: string;
+  /** Legenda base acrescentada ao fim de toda publicação. */
+  base_caption: string | null;
   /** URL pública do logo da cidade (bucket spotted-assets). */
   spotted_logo: string | null;
   /** `false` = publica no Instagram assim que o spotted é enviado. */
@@ -133,12 +136,14 @@ export interface AccountPatch {
   slug?: string;
   text_color?: string;
   shadow_color?: string;
+  base_caption?: string;
   is_moderated?: boolean;
 }
 
 export interface AccountCreateInput {
   display_name: string;
   username?: string;
+  base_caption: string;
   is_moderated?: boolean;
 }
 
