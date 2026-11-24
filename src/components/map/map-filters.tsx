@@ -64,9 +64,9 @@ export function MapFilters({
   return (
     <div
       data-map-control="true"
-      className="pointer-events-auto absolute top-3 right-3 left-3 z-[420] flex flex-col gap-2 sm:top-4 sm:right-auto sm:left-4 sm:w-[400px]"
+      className="pointer-events-auto absolute top-2.5 right-2.5 left-2.5 z-[420] flex flex-col gap-2 sm:top-4 sm:right-auto sm:left-4 sm:w-[400px]"
     >
-      <Card className="gap-2.5 p-2.5 shadow-lg">
+      <Card className="gap-2 p-2 shadow-lg sm:gap-2.5 sm:p-2.5">
         <div className="relative">
           <Search
             aria-hidden
@@ -81,14 +81,14 @@ export function MapFilters({
             onChange={(event) => onSearchChange(event.target.value)}
             onKeyDown={handleSearchKeyDown}
             placeholder="Buscar cidade, página ou @usuario…"
-            className="pr-8 pl-9"
+            className="pr-9 pl-9"
           />
           {search ? (
             <button
               type="button"
               onClick={() => onSearchChange("")}
               aria-label="Limpar busca"
-              className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+              className="absolute top-1/2 right-1.5 grid size-7 -translate-y-1/2 place-items-center rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               <X className="size-3.5" />
             </button>
@@ -98,7 +98,7 @@ export function MapFilters({
         <div
           role="group"
           aria-label="Filtrar contas por status"
-          className="flex flex-wrap gap-1.5"
+          className="no-scrollbar flex flex-nowrap gap-1.5 overflow-x-auto pb-0.5 sm:flex-wrap sm:overflow-visible sm:pb-0"
         >
           {FILTER_OPTIONS.map((option) => {
             const active = statusFilter === option.value;
@@ -110,7 +110,7 @@ export function MapFilters({
                 variant={active ? "default" : "outline"}
                 aria-pressed={active}
                 onClick={() => onStatusFilterChange(option.value)}
-                className="gap-1.5"
+                className="h-7 shrink-0 gap-1.5 px-2.5 sm:h-6 sm:px-2"
               >
                 <span>{option.label}</span>
                 <span
@@ -131,7 +131,7 @@ export function MapFilters({
         {showQuickMatches ? (
           <ul
             aria-label="Resultados rápidos"
-            className="divide-y rounded-md border bg-background"
+            className="max-h-48 divide-y overflow-y-auto rounded-md border bg-background"
           >
             {matchingAccounts.map((account) => {
               const status = getAccountStatus(account);
@@ -140,7 +140,7 @@ export function MapFilters({
                   <button
                     type="button"
                     onClick={() => onFocusAccount(account)}
-                    className="flex w-full items-center justify-between gap-2 px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none"
+                    className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left text-xs transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none sm:px-2.5 sm:py-1.5"
                   >
                     <span className="min-w-0 truncate font-medium">
                       {account.displayName}

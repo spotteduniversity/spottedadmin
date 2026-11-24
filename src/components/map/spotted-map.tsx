@@ -4,7 +4,7 @@ import { useEffect, useState, type ComponentProps } from "react";
 import L from "leaflet";
 import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
-import { LocateFixed, Minus, Plus } from "lucide-react";
+import { LocateFixed, Minus, Moon, Plus, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { SpottedMapAccount } from "@/mocks/spotteds-map";
 import { SpottedMarker } from "./spotted-marker";
@@ -20,8 +20,16 @@ const MIN_ZOOM = 5;
 const MAX_ZOOM = 18;
 const FOCUS_ZOOM = 11;
 
-const CARTO_DARK_TILES =
-  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+// Chave hardcoded da API CARTO Basemaps para o painel.
+const CARTO_API_KEY = "cb1_3m66_1_830bb0c167829f9c2ecb3d38";
+
+export type MapTheme = "light" | "dark";
+
+const CARTO_TILE_URLS: Record<MapTheme, string> = {
+  light: `https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
+  dark: `https://{s}.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
+};
+
 const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
@@ -85,21 +93,29 @@ function MapController({
   return null;
 }
 
-interface ZoomControlsProps {
+interface MapControlsProps {
   zoom: number;
+  mapTheme: MapTheme;
+  onToggleTheme: () => void;
   onResetView: () => void;
   hideOnMobile?: boolean;
 }
 
-function ZoomControls({ zoom, onResetView, hideOnMobile }: ZoomControlsProps) {
+function MapControls({
+  zoom,
+  mapTheme,
+  onToggleTheme,
+  onResetView,
+  hideOnMobile,
+}: MapControlsProps) {
   const map = useMap();
 
   return (
     <div
       data-map-control="true"
-      aria-label="Controles de zoom do mapa"
+      aria-label="Controles do mapa"
       className={[
-        "pointer-events-auto absolute right-3 bottom-16 z-[410] flex flex-col gap-1.5 sm:right-4 sm:bottom-8",
+        "pointer-events-auto absolute right-2.5 bottom-7 z-[410] flex flex-col gap-1.5 sm:right-4 sm:bottom-8",
         hideOnMobile ? "hidden md:flex" : "flex",
       ].join(" ")}
     >
@@ -112,7 +128,7 @@ function ZoomControls({ zoom, onResetView, hideOnMobile }: ZoomControlsProps) {
           disabled={zoom >= MAX_ZOOM}
           aria-label="Aumentar zoom"
           title="Aumentar zoom"
-          className="rounded-none border-b"
+          className="size-9 rounded-none border-b md:size-8"
         >
           <Plus className="size-4" />
         </Button>
@@ -124,7 +140,7 @@ function ZoomControls({ zoom, onResetView, hideOnMobile }: ZoomControlsProps) {
           disabled={zoom <= MIN_ZOOM}
           aria-label="Diminuir zoom"
           title="Diminuir zoom"
-          className="rounded-none"
+          className="size-9 rounded-none md:size-8"
         >
           <Minus className="size-4" />
         </Button>
@@ -137,9 +153,29 @@ function ZoomControls({ zoom, onResetView, hideOnMobile }: ZoomControlsProps) {
         onClick={onResetView}
         aria-label="Centralizar no interior de São Paulo"
         title="Centralizar região"
-        className="bg-card shadow-lg"
+        className="size-9 bg-card shadow-lg md:size-8"
       >
         <LocateFixed className="size-4" />
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        size="icon-sm"
+        onClick={onToggleTheme}
+        aria-label={
+          mapTheme === "light"
+            ? "Alternar para mapa escuro"
+            : "Alternar para mapa claro"
+        }
+        title={mapTheme === "light" ? "Mapa escuro" : "Mapa claro"}
+        className="size-9 bg-card shadow-lg md:size-8"
+      >
+        {mapTheme === "light" ? (
+          <Moon className="size-4" />
+        ) : (
+          <Sun className="size-4" />
+        )}
       </Button>
     </div>
   );
@@ -150,6 +186,8 @@ export interface SpottedMapProps {
   selectedAccount: SpottedMapAccount | null;
   clusterKey: string;
   resetTrigger: number;
+  mapTheme: MapTheme;
+  onToggleTheme: () => void;
   onSelectAccount: (account: SpottedMapAccount) => void;
   onClearSelection: () => void;
   onResetView: () => void;
@@ -160,6 +198,8 @@ export function SpottedMap({
   selectedAccount,
   clusterKey,
   resetTrigger,
+  mapTheme,
+  onToggleTheme,
   onSelectAccount,
   onClearSelection,
   onResetView,
@@ -175,7 +215,12 @@ export function SpottedMap({
       zoomControl={false}
       className="h-full w-full outline-none"
     >
-      <TileLayer url={CARTO_DARK_TILES} attribution={CARTO_ATTRIBUTION} />
+      <TileLayer
+        key={mapTheme}
+        url={CARTO_TILE_URLS[mapTheme]}
+        attribution={CARTO_ATTRIBUTION}
+        subdomains="abcd"
+      />
 
       <MapController
         selectedAccount={selectedAccount}
@@ -202,8 +247,10 @@ export function SpottedMap({
         ))}
       </MarkerClusterGroup>
 
-      <ZoomControls
+      <MapControls
         zoom={zoom}
+        mapTheme={mapTheme}
+        onToggleTheme={onToggleTheme}
         onResetView={onResetView}
         hideOnMobile={Boolean(selectedAccount)}
       />

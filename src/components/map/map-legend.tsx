@@ -15,12 +15,12 @@ export function MapLegend({ counts, className }: MapLegendProps) {
       data-map-control="true"
       aria-label="Legenda de status das contas"
       className={cn(
-        "pointer-events-auto absolute bottom-3 left-3 z-[410] sm:bottom-4 sm:left-4",
+        "pointer-events-auto absolute bottom-7 left-2.5 z-[410] max-w-[calc(100%-4.25rem)] sm:bottom-4 sm:left-4 sm:max-w-none",
         className,
       )}
     >
-      <Card className="gap-1.5 px-3 py-2 text-xs shadow-lg">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Card className="gap-1.5 px-2.5 py-1.5 text-[11px] shadow-lg sm:px-3 sm:py-2 sm:text-xs">
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 sm:gap-x-3">
           <span className="font-medium text-foreground">
             <span data-numeric>{counts.total}</span>{" "}
             {counts.total === 1 ? "conta" : "contas"}

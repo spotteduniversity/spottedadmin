@@ -23,6 +23,7 @@ import {
   getAccountStatus,
   type SpottedStatusFilter,
 } from "./map-utils";
+import type { MapTheme } from "./spotted-map";
 import { SpottedCard } from "./spotted-card";
 
 function MapLoadingPlaceholder() {
@@ -30,11 +31,11 @@ function MapLoadingPlaceholder() {
     <div
       role="status"
       aria-live="polite"
-      className="grid h-full w-full place-items-center bg-foreground text-background"
+      className="grid h-full w-full place-items-center bg-background text-foreground"
     >
       <div className="flex flex-col items-center gap-3">
         <Spinner className="size-6" />
-        <p className="text-sm text-background/80">Carregando mapa…</p>
+        <p className="text-sm text-muted-foreground">Carregando mapa…</p>
       </div>
     </div>
   );
@@ -55,6 +56,7 @@ export function MapPage() {
   const [statusFilter, setStatusFilter] = useState<SpottedStatusFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [mapTheme, setMapTheme] = useState<MapTheme>("light");
 
   const accounts = useMemo(() => data ?? [], [data]);
   const counts = useMemo(() => countByStatus(accounts), [accounts]);
@@ -102,13 +104,18 @@ export function MapPage() {
     setResetTrigger((current) => current + 1);
   }, []);
 
+  const handleToggleTheme = useCallback(() => {
+    setMapTheme((current) => (current === "light" ? "dark" : "light"));
+  }, []);
+
   const filtersActive = search.trim() !== "" || statusFilter !== "all";
   const clusterKey = `${statusFilter}:${filteredAccounts.length}:${search.trim()}`;
 
   return (
     <section
       aria-label="Mapa regional de contas do Spotted"
-      className="relative h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] w-full overflow-hidden md:h-dvh"
+      data-map-theme={mapTheme}
+      className="relative h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] w-full overflow-hidden overscroll-none md:h-dvh"
     >
       {isPending ? (
         <MapLoadingPlaceholder />
@@ -140,6 +147,8 @@ export function MapPage() {
             selectedAccount={selectedAccount}
             clusterKey={clusterKey}
             resetTrigger={resetTrigger}
+            mapTheme={mapTheme}
+            onToggleTheme={handleToggleTheme}
             onSelectAccount={handleSelectAccount}
             onClearSelection={handleClearSelection}
             onResetView={handleResetView}

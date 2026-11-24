@@ -138,9 +138,13 @@ export function SpottedCard({ account, onClose }: SpottedCardProps) {
       aria-modal="false"
       aria-labelledby={`spotted-card-title-${account.id}`}
       data-map-control="true"
-      className="pointer-events-auto absolute inset-x-3 bottom-3 z-[450] md:inset-x-auto md:top-4 md:right-4 md:bottom-auto md:w-[360px]"
+      className="pointer-events-auto absolute inset-x-0 bottom-0 z-[450] md:inset-x-auto md:top-4 md:right-4 md:bottom-auto md:w-[360px]"
     >
-      <Card className="max-h-[68dvh] gap-4 overflow-y-auto py-4 shadow-xl md:max-h-[calc(100dvh-11.5rem)]">
+      <Card className="max-h-[62dvh] gap-4 overflow-y-auto overscroll-contain rounded-t-2xl rounded-b-none border-b-0 pt-2.5 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl md:max-h-[calc(100dvh-13.5rem)] md:rounded-xl md:border-b md:py-4">
+        <div
+          aria-hidden
+          className="mx-auto h-1 w-10 shrink-0 rounded-full bg-muted-foreground/30 md:hidden"
+        />
         <CardHeader className="gap-2 px-4 pb-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 space-y-1">
