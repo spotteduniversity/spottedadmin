@@ -193,3 +193,126 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Leaflet dark map overrides (usando tokens do design system)                */
+/* -------------------------------------------------------------------------- */
+
+.leaflet-container {
+  background-color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.spotted-marker-icon,
+.spotted-cluster-icon {
+  background: transparent;
+  border: 0;
+}
+
+.spotted-marker-pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background-color: color-mix(in oklab, var(--foreground) 85%, transparent);
+  border: 2px solid color-mix(in oklab, var(--background) 85%, transparent);
+  box-shadow: 0 2px 10px color-mix(in oklab, var(--foreground) 70%, transparent);
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.spotted-marker-pin::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+}
+
+.spotted-marker-pin[data-status="active"]::after {
+  background-color: var(--accent);
+}
+
+.spotted-marker-pin[data-status="needs_reauth"]::after {
+  background-color: var(--destructive);
+}
+
+.spotted-marker-pin[data-status="inactive"]::after {
+  background-color: var(--muted-foreground);
+}
+
+.spotted-marker-pin[data-featured="true"] {
+  width: 26px;
+  height: 26px;
+}
+
+.spotted-marker-pin[data-featured="true"]::after {
+  width: 12px;
+  height: 12px;
+}
+
+.spotted-marker-icon:hover .spotted-marker-pin,
+.spotted-marker-icon:focus-visible .spotted-marker-pin,
+.spotted-marker-pin[data-selected="true"] {
+  transform: scale(1.22);
+  border-color: var(--background);
+  box-shadow:
+    0 0 0 4px color-mix(in oklab, var(--accent) 35%, transparent),
+    0 4px 14px color-mix(in oklab, var(--foreground) 80%, transparent);
+}
+
+.spotted-marker-pin[data-status="needs_reauth"][data-selected="true"] {
+  box-shadow:
+    0 0 0 4px color-mix(in oklab, var(--destructive) 35%, transparent),
+    0 4px 14px color-mix(in oklab, var(--foreground) 80%, transparent);
+}
+
+.spotted-marker-pin[data-status="inactive"][data-selected="true"] {
+  box-shadow:
+    0 0 0 4px color-mix(in oklab, var(--muted-foreground) 35%, transparent),
+    0 4px 14px color-mix(in oklab, var(--foreground) 80%, transparent);
+}
+
+.spotted-cluster-badge {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+  border: 2px solid var(--foreground);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  box-shadow:
+    0 0 0 4px color-mix(in oklab, var(--accent) 28%, transparent),
+    0 4px 12px color-mix(in oklab, var(--foreground) 65%, transparent);
+  transition: transform 150ms ease;
+}
+
+.spotted-cluster-icon:hover .spotted-cluster-badge,
+.spotted-cluster-icon:focus-visible .spotted-cluster-badge {
+  transform: scale(1.08);
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: color-mix(in oklab, var(--foreground) 78%, transparent);
+  color: color-mix(in oklab, var(--background) 72%, transparent);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-top-left-radius: var(--radius-sm);
+  backdrop-filter: blur(4px);
+}
+
+.leaflet-container .leaflet-control-attribution a {
+  color: color-mix(in oklab, var(--background) 90%, transparent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.leaflet-marker-icon:focus-visible {
+  outline: 2px solid var(--background);
+  outline-offset: 3px;
+  border-radius: 9999px;
+}

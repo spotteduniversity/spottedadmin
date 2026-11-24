@@ -20,10 +20,13 @@ import type {
   AdminUser,
   ApproveResponse,
   LoginResponse,
+  MapAccountsResponse,
   MeResponse,
   PendingPost,
   PendingResponse,
   PreviewResponse,
+  SpottedMapAccount,
+  SpottedMapAccountRow,
   LongLivedTokenResponse,
 } from "./types";
 
@@ -36,6 +39,7 @@ export const qk = {
   accounts: (includeArchived: boolean) =>
     ["accounts", { includeArchived }] as const,
   allAccounts: ["accounts"] as const,
+  mapAccounts: ["accounts", "map"] as const,
   pending: ["pending"] as const,
   admins: ["admins"] as const,
 };
@@ -61,6 +65,45 @@ export async function fetchAccounts(includeArchived = false): Promise<Account[]>
     query: { include_archived: includeArchived ? "true" : undefined },
   });
   return res.accounts ?? [];
+}
+
+function toNumber(value: number | string | null | undefined): number {
+  const parsed = Number(value ?? 0);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function mapSpottedMapRow(row: SpottedMapAccountRow): SpottedMapAccount | null {
+  const lat = Number(row.lat);
+  const lng = Number(row.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+  return {
+    id: row.id,
+    username: row.username,
+    displayName: row.display_name || `@${row.username}`,
+    slug: row.slug ?? null,
+    isActive: Boolean(row.is_active),
+    needsReauth: Boolean(row.needs_reauth),
+    createdAt: row.created_at,
+    totalSpotteds: toNumber(row.total_spotteds),
+    publishedSpotteds: toNumber(row.published_spotteds),
+    avgReach: toNumber(row.avg_reach),
+    totalLikes: toNumber(row.total_likes),
+    totalComments: toNumber(row.total_comments),
+    totalShares: toNumber(row.total_shares),
+    totalUsers: toNumber(row.total_users),
+    city: row.city,
+    state: row.state,
+    lat,
+    lng,
+  };
+}
+
+export async function fetchMapAccounts(): Promise<SpottedMapAccount[]> {
+  const res = await api.get<MapAccountsResponse>("/accounts/map");
+  return (res.accounts ?? [])
+    .map(mapSpottedMapRow)
+    .filter((item): item is SpottedMapAccount => item !== null);
 }
 
 export async function createAccount(input: AccountCreateInput): Promise<Account> {

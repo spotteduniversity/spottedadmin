@@ -103,6 +103,11 @@ export interface Account {
   spotted_logo: string | null;
   /** `false` = publica no Instagram assim que o spotted é enviado. */
   is_moderated: boolean;
+  city: string | null;
+  state: string | null;
+  ibge_city_code: number | null;
+  lat: number | null;
+  lng: number | null;
   token_expires_at: string | null;
   token_refreshed_at: string | null;
   created_at: string;
@@ -138,6 +143,8 @@ export interface AccountPatch {
   shadow_color?: string;
   base_caption?: string;
   is_moderated?: boolean;
+  city?: string | null;
+  state?: string | null;
 }
 
 export interface AccountCreateInput {
@@ -145,7 +152,62 @@ export interface AccountCreateInput {
   username?: string;
   base_caption: string;
   is_moderated?: boolean;
+  city?: string | null;
+  state?: string | null;
 }
+
+/** Linha retornada pela view `public.spotted_map_accounts` (snake_case). */
+export interface SpottedMapAccountRow {
+  id: string;
+  username: string;
+  display_name: string | null;
+  slug: string | null;
+  is_active: boolean;
+  needs_reauth: boolean;
+  created_at: string;
+  total_spotteds: number | string;
+  published_spotteds: number | string;
+  avg_reach: number | string;
+  total_likes: number | string;
+  total_comments: number | string;
+  total_shares: number | string;
+  total_users: number | string;
+  city: string;
+  state: string;
+  ibge_city_code?: number | null;
+  lat: number | string;
+  lng: number | string;
+}
+
+export interface MapAccountsResponse extends ApiEnvelope {
+  accounts: SpottedMapAccountRow[];
+}
+
+export type SpottedMapAccount = {
+  // instagram_accounts
+  id: string;
+  username: string;
+  displayName: string;
+  slug: string | null;
+  isActive: boolean;
+  needsReauth: boolean;
+  createdAt: string;
+
+  // agregados derivados (spotteds / users)
+  totalSpotteds: number;
+  publishedSpotteds: number;
+  avgReach: number;
+  totalLikes: number;
+  totalComments: number;
+  totalShares: number;
+  totalUsers: number;
+
+  // localização
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+};
 
 export type AssetKind = "base" | "template";
 

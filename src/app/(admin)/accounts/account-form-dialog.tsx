@@ -10,13 +10,16 @@
  * orquestra (a página) decide a ordem: cria a conta e só então sobe o asset.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import {
   Building2,
+  Check,
   Image as ImageIcon,
+  MapPin,
   Palette,
   Send,
   Upload,
@@ -33,9 +36,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  listCitiesByState,
+  listStates,
+  normalizeCityName,
+} from "@/lib/municipios";
 import {
   ASSET_MIME_TYPES,
   DEFAULT_TEXT_COLOR,
@@ -86,6 +101,8 @@ export interface AccountFormValues {
   display_name: string;
   username?: string;
   slug?: string;
+  city: string | null;
+  state: string | null;
   base_caption: string;
   is_moderated: boolean;
   text_color: string;
@@ -93,6 +110,9 @@ export interface AccountFormValues {
   /** Arquivos escolhidos no modal, ainda não enviados. */
   assets: Partial<Record<AssetKind, File>>;
 }
+
+const NONE_STATE_VALUE = "__none__";
+const STATES = listStates();
 
 /** "rgba(0, 0, 0, 0.65)" -> partes numéricas. */
 function parseShadow(value: string | null | undefined) {
@@ -173,6 +193,11 @@ export function AccountFormDialog({
 
   const [assets, setAssets] = useState<Partial<Record<AssetKind, File>>>({});
   const [assetError, setAssetError] = useState<string | null>(null);
+  const [locationState, setLocationState] = useState("");
+  const [locationCity, setLocationCity] = useState("");
+  const [cityOpen, setCityOpen] = useState(false);
+  const [cityHighlightIndex, setCityHighlightIndex] = useState(0);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const inputs = useRef<Record<AssetKind, HTMLInputElement | null>>({
     base: null,
     template: null,
@@ -181,6 +206,22 @@ export function AccountFormDialog({
   // Evita que um refetch da lista, com um novo objeto de conta, apague o que
   // o usuário digitou enquanto o modal está aberto.
   const loadedFor = useRef<string | null>(null);
+
+  const citiesQuery = useQuery({
+    queryKey: ["ibge-cities", locationState],
+    queryFn: () => listCitiesByState(locationState),
+    enabled: Boolean(locationState),
+    staleTime: Infinity,
+  });
+
+  const filteredCities = useMemo(() => {
+    const list = citiesQuery.data ?? [];
+    const term = normalizeCityName(locationCity);
+    if (!term) return list.slice(0, 60);
+    return list
+      .filter((item) => normalizeCityName(item.name).includes(term))
+      .slice(0, 60);
+  }, [citiesQuery.data, locationCity]);
 
   const {
     register,
@@ -230,6 +271,11 @@ export function AccountFormDialog({
     });
     setAssets({});
     setAssetError(null);
+    setLocationState(account?.state ?? "");
+    setLocationCity(account?.city ?? "");
+    setCityOpen(false);
+    setCityHighlightIndex(0);
+    setLocationError(null);
   }, [open, account, reset]);
 
   // Só os valores que alimentam os seletores de cor precisam de re-render.
@@ -283,12 +329,89 @@ export function AccountFormDialog({
     });
   }
 
+  function handleStateChange(nextValue: string) {
+    const nextUf = nextValue === NONE_STATE_VALUE ? "" : nextValue;
+    setLocationState(nextUf);
+    setLocationCity("");
+    setCityOpen(false);
+    setCityHighlightIndex(0);
+    setLocationError(null);
+  }
+
+  function selectCityOption(cityName: string) {
+    setLocationCity(cityName);
+    setCityOpen(false);
+    setLocationError(null);
+  }
+
+  function handleCityInputKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (!cityOpen && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      setCityOpen(true);
+      return;
+    }
+    if (!cityOpen || filteredCities.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setCityHighlightIndex((prev) =>
+        prev + 1 < filteredCities.length ? prev + 1 : 0,
+      );
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setCityHighlightIndex((prev) =>
+        prev > 0 ? prev - 1 : filteredCities.length - 1,
+      );
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const target = filteredCities[cityHighlightIndex] ?? filteredCities[0];
+      if (target) selectCityOption(target.name);
+    } else if (event.key === "Escape") {
+      event.stopPropagation();
+      setCityOpen(false);
+    }
+  }
+
   function submit(values: FormValues) {
     if (isSubmitting) return;
+
+    let resolvedCity: string | null = null;
+    let resolvedState: string | null = null;
+
+    if (locationState) {
+      const trimmedCity = locationCity.trim();
+      if (!trimmedCity) {
+        setLocationError("Selecione uma cidade da lista.");
+        return;
+      }
+
+      const list = citiesQuery.data ?? [];
+      const exact = list.find(
+        (item) => normalizeCityName(item.name) === normalizeCityName(trimmedCity),
+      );
+      const unchangedExisting =
+        account?.state === locationState &&
+        account?.city &&
+        normalizeCityName(account.city) === normalizeCityName(trimmedCity);
+
+      if (exact) {
+        resolvedCity = exact.name;
+        resolvedState = locationState;
+      } else if (unchangedExisting && citiesQuery.isPending) {
+        resolvedCity = account.city;
+        resolvedState = locationState;
+      } else {
+        setLocationError("Selecione uma cidade válida da lista.");
+        return;
+      }
+    }
+
+    setLocationError(null);
     onSubmit({
       display_name: values.display_name.trim(),
       username: values.username || undefined,
       slug: values.slug?.trim(),
+      city: resolvedCity,
+      state: resolvedState,
       base_caption: values.base_caption.trim(),
       is_moderated: values.is_moderated,
       text_color: values.text_color,
@@ -443,6 +566,172 @@ export function AccountFormDialog({
                   ) : (
                     <p className="text-xs text-muted-foreground">
                       Endereço público da cidade.
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="account_state">Estado (UF)</Label>
+                  <Select
+                    value={locationState || NONE_STATE_VALUE}
+                    onValueChange={handleStateChange}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger id="account_state" className="w-full">
+                      <SelectValue placeholder="Selecione o estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NONE_STATE_VALUE}>
+                        Sem localização
+                      </SelectItem>
+                      {STATES.map((item) => (
+                        <SelectItem key={item.uf} value={item.uf}>
+                          {item.uf} — {item.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Usado para posicionar a conta no mapa.
+                  </p>
+                </div>
+
+                <div className="relative space-y-2">
+                  <Label htmlFor="account_city">Cidade</Label>
+                  <div className="relative">
+                    <MapPin
+                      aria-hidden
+                      className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      id="account_city"
+                      role="combobox"
+                      aria-expanded={cityOpen}
+                      aria-autocomplete="list"
+                      aria-controls="account-city-listbox"
+                      aria-invalid={Boolean(locationError)}
+                      disabled={!locationState || isSubmitting}
+                      value={locationCity}
+                      placeholder={
+                        !locationState
+                          ? "Escolha o estado primeiro"
+                          : citiesQuery.isPending
+                            ? "Carregando municípios…"
+                            : "Digite para buscar a cidade…"
+                      }
+                      className="pr-8 pl-9"
+                      onFocus={() => {
+                        if (locationState) setCityOpen(true);
+                      }}
+                      onBlur={() => {
+                        setCityOpen(false);
+                        if (!locationState || !locationCity.trim()) return;
+                        const match = (citiesQuery.data ?? []).find(
+                          (item) =>
+                            normalizeCityName(item.name) ===
+                            normalizeCityName(locationCity),
+                        );
+                        if (match) {
+                          setLocationCity(match.name);
+                          setLocationError(null);
+                        }
+                      }}
+                      onChange={(event) => {
+                        setLocationCity(event.target.value);
+                        setCityOpen(true);
+                        setCityHighlightIndex(0);
+                        if (locationError) setLocationError(null);
+                      }}
+                      onKeyDown={handleCityInputKeyDown}
+                    />
+                    {locationCity && locationState ? (
+                      <button
+                        type="button"
+                        aria-label="Limpar cidade"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => {
+                          setLocationCity("");
+                          setCityOpen(true);
+                          setLocationError(null);
+                        }}
+                        className="absolute top-1/2 right-2 grid size-6 -translate-y-1/2 place-items-center rounded-sm text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  {cityOpen && locationState ? (
+                    <div
+                      id="account-city-listbox"
+                      role="listbox"
+                      aria-label="Municípios disponíveis"
+                      className="absolute z-50 mt-1 max-h-52 w-full overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+                    >
+                      {citiesQuery.isPending ? (
+                        <div className="flex items-center gap-2 px-2.5 py-2 text-xs text-muted-foreground">
+                          <Spinner className="size-3.5" />
+                          <span>Carregando municípios do IBGE…</span>
+                        </div>
+                      ) : citiesQuery.isError ? (
+                        <div className="space-y-1.5 px-2.5 py-2 text-xs">
+                          <p className="text-destructive">
+                            Não foi possível carregar as cidades.
+                          </p>
+                          <Button
+                            type="button"
+                            size="xs"
+                            variant="outline"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => citiesQuery.refetch()}
+                          >
+                            Tentar novamente
+                          </Button>
+                        </div>
+                      ) : filteredCities.length === 0 ? (
+                        <p className="px-2.5 py-2 text-xs text-muted-foreground">
+                          Nenhuma cidade encontrada em {locationState}.
+                        </p>
+                      ) : (
+                        filteredCities.map((item, idx) => {
+                          const selected =
+                            normalizeCityName(locationCity) ===
+                            normalizeCityName(item.name);
+                          const highlighted = idx === cityHighlightIndex;
+                          return (
+                            <button
+                              key={item.ibgeCode}
+                              type="button"
+                              role="option"
+                              aria-selected={selected}
+                              onMouseDown={(event) => {
+                                event.preventDefault();
+                                selectCityOption(item.name);
+                              }}
+                              className={`flex w-full items-center justify-between rounded-sm px-2.5 py-1.5 text-left text-sm ${
+                                highlighted
+                                  ? "bg-accent text-accent-foreground"
+                                  : "hover:bg-muted"
+                              }`}
+                            >
+                              <span className="truncate">{item.name}</span>
+                              {selected ? (
+                                <Check className="size-3.5 shrink-0" />
+                              ) : null}
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  ) : null}
+
+                  {locationError ? (
+                    <p role="alert" className="text-xs text-destructive">
+                      {locationError}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Selecione um município oficial da lista.
                     </p>
                   )}
                 </div>

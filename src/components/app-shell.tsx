@@ -9,7 +9,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, KeyRound, LayoutList, LogOut, ShieldCheck } from "lucide-react";
+import {
+  Building2,
+  KeyRound,
+  LayoutList,
+  LogOut,
+  Map as MapIcon,
+  ShieldCheck,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -39,6 +46,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: "/pending", label: "Fila de aprovação", icon: LayoutList },
   { href: "/accounts", label: "Contas e cidades", icon: Building2 },
+  { href: "/mapa", label: "Mapa", icon: MapIcon },
   { href: "/long-lived-token", label: "Criar Long Lived", icon: KeyRound },
   { href: "/users", label: "Administradores", icon: ShieldCheck, superOnly: true },
 ];

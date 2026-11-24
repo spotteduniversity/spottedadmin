@@ -108,11 +108,18 @@ export default function AccountsPage() {
       let target = account;
 
       if (target) {
+        const locationChanged =
+          values.city !== (target.city ?? null) ||
+          values.state !== (target.state ?? null);
+
         target = await patchAccount(target.id, {
           display_name: values.display_name,
           // `undefined` deixa o valor atual intacto no backend.
           username: values.username,
           slug: values.slug,
+          ...(locationChanged
+            ? { city: values.city, state: values.state }
+            : {}),
           base_caption: values.base_caption,
           text_color: values.text_color,
           shadow_color: values.shadow_color,
@@ -125,6 +132,8 @@ export default function AccountsPage() {
         target = await createAccount({
           display_name: values.display_name,
           username: values.username,
+          city: values.city,
+          state: values.state,
           base_caption: values.base_caption,
           // Só envia quando falso; o default do banco já é `true`.
           ...(values.is_moderated === false ? { is_moderated: false } : {}),
@@ -155,10 +164,15 @@ export default function AccountsPage() {
     },
     onSuccess: (account, { values, account: previous }) => {
       const uploaded = Object.keys(values.assets).length;
+      const locationDescription =
+        account.city && account.state
+          ? `Localização definida: ${account.city}/${account.state}`
+          : undefined;
       toast.success(
         previous
           ? "Cidade atualizada."
           : `Cidade "${account.display_name}" criada.`,
+        locationDescription ? { description: locationDescription } : undefined,
       );
       if (uploaded > 0) {
         toast.success(
